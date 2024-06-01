@@ -11,9 +11,9 @@ import HelloWorld from './components/HelloWorld.vue'
       <HelloWorld msg="eoeoooeoeoe" />
 
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/product">product</RouterLink>
+        <!-- <RouterLink to="/">Home</RouterLink> -->
+        <!-- <RouterLink to="/about">About</RouterLink> -->
+        <!-- <RouterLink to="/Test">product</RouterLink> -->
       </nav>
     </div>
   </header>
@@ -23,13 +23,13 @@ import HelloWorld from './components/HelloWorld.vue'
 
 <script>
 import { RouterLink, RouterView } from 'vue-router';
-import HelloWorld from './components/HelloWorld.vue';
+import TestView from './views/TestView.vue';
 
 export default {
   components: {
     RouterLink,
     RouterView,
-    HelloWorld,
+    TestView,
   },
 };
 </script>

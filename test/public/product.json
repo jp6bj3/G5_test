@@ -1,0 +1,14 @@
+[{
+  "id": 1,
+  "name": "商品名稱",
+  "price": 1000,
+  "img": "1.png",
+  "rating": 5
+},
+{
+  "id": 2,
+  "name": "商品名稱2",
+  "price": 2000,
+  "img": "2.png",
+  "rating": 2
+}]
