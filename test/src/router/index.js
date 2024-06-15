@@ -21,8 +21,55 @@ const router = createRouter({
       path: '/Test',
       name: 'TestView',
       component: () => import('@/views/TestView.vue')
+    },
+    {
+      path: '/EggView',
+      name: 'EggView',
+      component: () => import('@/views/EggView.vue')
+    },
+    {
+      path: '/1',
+      name: 'life',
+      component: () => import('@/views/0616/1.vue')
+    },
+    {
+      path: '/2',
+      name: 'time',
+      component: () => import('@/views/0616/2.vue')
+    },
+    {
+      path: '/3',
+      name: 'opiton',
+      component: () => import('@/views/0616/3.vue')
+    },
+    {
+      path: '/4',
+      name: 'from',
+      component: () => import('@/views/0616/4.vue')
+    },
+    {
+      path: '/5',
+      name: 'search',
+      component: () => import('@/views/0616/5.vue')
+    },
+    {
+      path: '/5/:id',
+      name: 'searchinfo',
+      component: () => import('@/views/0616/6.vue')
+      ,meta: {
+        title: '搜尋結果'
+      }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notfound',
+      component: () => import('@/views/0616/7.vue')
     }
-  ]
+  ],
+  scrollBehavior(to,from,savedPosition) {
+  
+    return { top: 0 }
+  }
 })
 
 export default router

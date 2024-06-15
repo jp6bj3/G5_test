@@ -1,71 +1,60 @@
 <template>
-    <div>
-       <!-- <div class="card" 
-       >
-       <div>
-        <img :src="parseImg( product.img)" alt="">
-        </div>
-       <div>
-        {{  product.name }}
-        <span v-for="star in  product.rating">o </span>
-        {{  product.price }}
-       </div>
-       <div>
-        <button @click="$emit('add')">+100</button>
-        {{money}}
-        {{ name }}
+  <div v-if="item" class="card">
+    <div class="card_img">
+      <img 
+        v-if="item.img" 
+        :src="parseIcon(item.img)" 
+        :alt="item.name"
+      >
+      <img v-else src="" alt="">
     </div>
-        </div> -->
-
-    
-
-    <div v-if="item">
-        {{ item.name || ''}}
-        {{ item.price || 0}}
+    <div class="card_content">
+      <div class="card_content_title">
+        <p>{{ item.name || ''  }}</p>
+        <p>$ {{ item.price  }}</p>
+      </div>
+      <div v-if="item.rating">
         <span 
-        v-for="star in item.rating" :key="star">X</span>
-        <img v-if="item.img" :src="parseImg(item.img)">
-        
-       
+          v-for="star in item.rating" 
+          :key="star"
+        >
+          🌟
+        </span>
+      </div>
     </div>
-         </div>
+    <div class="card_action">
+      <!-- <Button @click="addToCart(item, 1)">加入購物車</Button> -->
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
-    props: ['item'],
-    data() {
-        return {
-            // img1: img1,
-            // imgs: ['1.png', '2.jpg', '3.png'],
-            // product:
-            //     {
-            //     id:1,
-            //     name: '商品1',
-            //     img: '1.png',
-            //     price: 100,
-            //     rating:4
-            //     }
-        }
-    },
-    methods: {
-        parseImg(file) {
-            //指到 src || 不能@ 要../回到上一層
-            return new URL(`../../assets/img/${file}`, import.meta.url).href
-        }
+  props: ['item'],
+  methods: {
+    parseIcon(file) { 
+      // 指到src || ..的意思是“回到上一層”
+      return new URL(`../../assets/images/product/${file}`, import.meta.url).href 
     }
+  }
 }
 </script>
 
 <style lang="scss">
-img{
-    height: 5rem;
-}
 .card{
-    width: 20rem;
-    height: 20rem;
-    background-image: url('@/assets/img/1.png');
-    background-size: cover;
+  &_img{
+    height: 12rem;
+    >img{
+      height: 100%;
+    }
+  }
+  &_content {
+    &_title{
+      display: inline-flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 0.8rem;
+    }
+  }
 }
-
 </style>

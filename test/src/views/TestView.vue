@@ -12,10 +12,10 @@
         <button @click="filter(5)">XXXXX</button>
    <hr>
 //手寫
-    <ProductCard :item="product[0]" :name="child[0]"/>
+    <!-- <ProductCard :item="product[0]" :name="child[0]"/>
         <hr>
     <ProductCard :item="product[1]" :name="child[0]"/>
-    <hr>
+    <hr> -->
 //v-for
     <div v-if="displayList.length===0">
     loading...
@@ -27,12 +27,12 @@
     <hr>
 
 </div>
-       <p>test</p>
-       <!-- 不要加分號 -->
+      <!--  <p>test</p>
+       不要加分號 
        <img src="@/assets/img/1.png" alt="">
 
-       <!-- 物件導出 要分號 -->
-       <img :src="img1" alt="">
+        物件導出 要分號 
+       <img :src="img1" alt="">-->
 
         <!--  -->
        <!-- <img :src="parseImg('1.png')" alt=""> -->
@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import ProductCard from '@/components/layout/ProductCard.vue'
+import ProductCard from '@/components/layout/ProductCard1.vue'
 import img1 from '@/assets/img/1.png'
 export default {
     components: {
@@ -91,24 +91,24 @@ export default {
             displayList:[],
             pay: 2000,
             child: ['ingrid'],
-            // img1: img1,
-            // imgs: ['1.png', '2.jpg', '3.png'],
-            menu: [
-                {
-                id:1,
-                name: '商品1',
-                img: '1.png',
-                price: 100,
-                rating:4
-                },
-                {
-                id:2,
-                name: '商品2',
-                img: '3.png',
-                price: 100,
-                rating:5
-                },
-            ]
+            // // img1: img1,
+            // // imgs: ['1.png', '2.jpg', '3.png'],
+            // menu: [
+            //     {
+            //     id:1,
+            //     name: '商品1',
+            //     img: '1.png',
+            //     price: 100,
+            //     rating:4
+            //     },
+            //     {
+            //     id:2,
+            //     name: '商品2',
+            //     img: '3.png',
+            //     price: 100,
+            //     rating:5
+            //     },
+            // ]
         }
     },
     mounted() {
