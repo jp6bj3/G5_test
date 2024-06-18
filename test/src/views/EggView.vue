@@ -28,6 +28,7 @@ export default {
         { id: 2, color: '#FF1493' },
         { id: 3, color: '#FFD700' },
         { id: 4, color: '#00BFFF' },
+        //球球們
         // Add more capsule colors as needed
       ],
       isOpen: false,

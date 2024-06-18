@@ -28,6 +28,11 @@ const router = createRouter({
       component: () => import('@/views/EggView.vue')
     },
     {
+      path: '/11',
+      name: '11',
+      component: () => import('@/views/11.vue')
+    },
+    {
       path: '/1',
       name: 'life',
       component: () => import('@/views/0616/1.vue')
@@ -64,10 +69,14 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       name: 'notfound',
       component: () => import('@/views/0616/7.vue')
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/0616/Login.vue')
     }
   ],
   scrollBehavior(to,from,savedPosition) {
-  
     return { top: 0 }
   }
 })

@@ -1,95 +1,123 @@
 <template>
-    <main class="product">
-        <header>
-            <input type="text" v-model="search">
-            {{ search }}
-            <button @click="clear">清除</button>
-            <button @click="filterRating('')">OK</button>
-            <!-- ⬇️後續覺得這一段重複性太高也可以在拆出組件⬇️ -->
-            <button v-for="starCount in 5" :key="starCount" @click="filterRating(starCount)">
-                <span v-for="star in starCount" :key="star">
-                    🌟
-                </span>
-            </button>
-            <button @click="clear">清除</button>
-            <!-- ⬆️後續覺得這一段重複性太高也可以在拆出組件⬆️ -->
+  <div class="product">
+    <header>
+      <input type="text" v-model="search" />
+      <br />
+      <button @click="clear">全部</button>
+      <button v-for="starCount in 5" :key="starCount" @click="filterRating(starCount)">
+        <span v-for="star in starCount" :key="star">🌟</span>
+      </button>
+    </header>
 
-        </header>
+    <div v-if="responseData.length === 0">loading...</div>
+    <div v-else-if="paginatedItems.length === 0">nodata...</div>
+    <div v-else class="product_container">
+      <ProductCard v-for="item in paginatedItems" :key="item.id" :item="item" />
+    </div>
 
-        <!-- ⬇️後續覺得這一段重複性太高也可以在拆出組件⬇️ -->
-        <div v-if="responseData.length === 0">loading...</div>
-        <div v-else-if="displayData.length === 0">nodata...</div>
-        <div v-else class="product_container">
-            <ProductCard v-for="item in displayData" :key="item.id" :item="item" />
-        </div>
-        <!-- ⬆️後續覺得這一段重複性太高也可以在拆出組件⬆️ -->
-
-    </main>
+    <div v-if="totalPages > 1">
+      <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+      <span>第 {{ currentPage }} 页</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+    </div>
+  </div>
 </template>
 
 <script>
-import ProductCard from '@/components/layout/ProductCard1.vue'
-export default {
-    components: {
-        ProductCard
-    },
-    data() {
-        return {
-            responseData: [],
-            displayData: [],
-            seach:""
-        }
-    },
-    //可以用create也可以用mounted
-    // created() {
-    mounted() {
-        fetch("/product.json")
-            .then(res => res.json())
-            .then(json => {
-                // 確認有沒有response
-                console.log(json);
-                // 備份還原用
-                this.responseData = json
-                // 顯示用
-                this.displayData = json
-            })
-    },
-    methods: {
-        clear() {
-            this.displayData = this.responseData
-        },
-        filterRating(star) {
-            this.displayData = this.responseData.filter((item) => {
-                return item.rating === star
-            })
-        },
-        filterData() {
-            console.log(this.search);
-            this.displayData = this.responseData.filter((item) => {
-                  return item.name === this.search
-                // return item.name.includes(this.search)
-            })
-        }
-    }
-}
+import ProductCard from '@/components/layout/ProductCard1.vue';
 
+export default {
+  components: {
+    ProductCard,
+  },
+  data() {
+    return {
+      responseData: [],
+      displayData: [],
+      search: '',
+      currentPage: 1,
+      itemsPerPage: 2,
+    };
+  },
+  mounted() {
+    this.fetchProduct();
+    this.filterData();
+  },
+  computed: {
+    topFourProduct() {
+      console.log('topFourProduct');
+      return this.responseData.slice(0, 4);
+    },
+    totalPages() {
+      return Math.ceil(this.displayData.length / this.itemsPerPage);
+    },
+    paginatedItems() {
+      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+      const endIndex = startIndex + this.itemsPerPage;
+      return this.displayData.slice(startIndex, endIndex);
+    },
+  },
+  watch: {
+    search: {
+      handler(newValue) {
+        this.filterData();
+      },
+    },
+  },
+  methods: {
+    fetchProduct() {
+      fetch('../../../public/product.json')
+        .then((res) => res.json())
+        .then((json) => {
+          console.log(json);
+          this.responseData = json;
+          this.displayData = json;
+        });
+    },
+    clear() {
+      this.search = '';
+      this.displayData = this.responseData;
+      this.currentPage = 1;
+    },
+    filterRating(star) {
+      this.displayData = this.responseData.filter((item) => {
+        return item.rating === star;
+      });
+      this.currentPage = 1;
+    },
+    filterData() {
+      console.log(this.search);
+      this.displayData = this.responseData.filter((item) => {
+        return item.name.toLowerCase().includes(this.search.toLowerCase());
+      });
+      this.currentPage = 1;
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+  },
+};
 </script>
 
 <style lang="scss">
-// 越寫越多的時候可以寫在這裡面
-// @import "@/assets/scss/page/product.scss";
-// 測試時可以寫在這裡
 .product {
-    max-width: 35.5rem;
-    margin: 2rem auto;
+  max-width: 35.5rem;
+  margin: 2rem auto;
 
-    &_container {
-        display: inline-flex;
-        width: 100%;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        flex: 1 1 auto;
-        margin: 1rem auto;
-    }
+  &_container {
+    display: inline-flex;
+    width: 100%;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+    margin: 1rem auto;
+  }
 }
 </style>

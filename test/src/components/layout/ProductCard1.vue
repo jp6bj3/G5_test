@@ -20,20 +20,28 @@
     
 
     <div v-if="item">
+        <RouterLink :to="`/5/${item.id}`">
+
         {{ item.name || ''}}
         {{ item.price || 0}}
         <span 
         v-for="star in item.rating" :key="star">X</span>
         <img v-if="item.img" :src="parseImg(item.img)">
-        
+        </RouterLink>
+        <button @click="addCard(item)">加入購物車
+        </button>
        
     </div>
          </div>
 </template>
 
 <script>
+import { mapActions } from 'pinia'
+import {RouterLink} from 'vue-router';
+
 export default {
     props: ['item'],
+     
     data() {
         return {
             // img1: img1,

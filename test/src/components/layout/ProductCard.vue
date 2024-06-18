@@ -1,5 +1,6 @@
 <template>
   <div v-if="item" class="card">
+    <RouterLink :to="`/test/public/${item.id}`">
     <div class="card_img">
       <img 
         v-if="item.img" 
@@ -25,10 +26,13 @@
     <div class="card_action">
       <!-- <Button @click="addToCart(item, 1)">加入購物車</Button> -->
     </div>
+    </RouterLink>
   </div>
 </template>
 
 <script>
+import { RouterLink } from 'vue-router';
+
 export default {
   props: ['item'],
   methods: {
