@@ -1,455 +1,294 @@
 <template>
-  <div id="app" ref="app">
-    <div class="container">
-      <div class="game-layer">
-        <div class="machine-container" ref="machine">
-          <div class="backboard"></div>
-          <div class="balls" ref="balls"></div>
-          <img class="machine" src="https://assets.codepen.io/2509128/gotcha.svg" />
-          <div class="title"></div>
-          <div class="price"></div>
-          <img class="handle" ref="handle" src="https://assets.codepen.io/2509128/handle.svg" />
-          <div class="pointer" ref="pointer">
-            <img src="https://assets.codepen.io/2509128/point.png" />
-          </div>
+  <div class="gachapon-machine">
+    <div class="machine-body">
+      <div class="display">
+        <div class="capsules-container">
+         <div
+      v-for="(level, index) in levels"
+      :key="index"
+      class="capsule"
+      :style="{
+    backgroundColor: level.color,
+     animationPlayState: isShaking ? 'running' : 'paused',
+      }"
+    ></div>
         </div>
       </div>
-      <div class="ui-layer">
-        <div class="title-container">
-          <div class="title" ref="title">
-            <h2 class="wiggle">Tap to get a prize!</h2>
-          </div>
+      <div class="dispenser">
+        <div class="capsule-slot" :class="{ 'open': isOpen }">
+          <div class="dispensed-capsule" :class="{ 'animate': isAnimating }" :style="{ backgroundColor: dispensedCapsuleColor }"></div>
         </div>
-        <div class="prize-container" ref="prizeContainer">
-          <div class="prize-ball-container"></div>
-          <div class="prize-reward-container" ref="prizeReward">
-            <div class="shine">
-              <img src="https://assets.codepen.io/2509128/shine.png" />
-            </div>
-            <div class="prize">
-              <img class="wiggle" :src="prize.image" />
-            </div>
-          </div>
-        </div>
+        <button @click="dispenseGachapon">
+          <span v-if="!isDispensing">開始抽獎</span>
+          <span v-else>抽獎中</span>
+        </button>
+      </div>
+    </div>
+    <div v-if="result !== null" class="result-container">
+      <div class="result">
+        <p>抽獎結果: 球 {{ result.index + 1 }} ({{ result.level }})</p>
+        <button @click="reset">前往會員中心</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// import { getPrize, createBalls, startAnimation, jitterAnimation, stopJitterAnimation, pickupAnimation, popAnimation } from './animations'
-
 export default {
   data() {
     return {
-      prize: null,
+      levels: [
+        { name: '普通', ratio: 6, color: '#7CFC00' },
+        { name: '尚可', ratio: 6, color: '#FF1493' },
+        { name: '好', ratio: 2, color: '#FFD700' },
+        { name: '優秀', ratio: 1, color: '#00BFFF' },
+        { name: '', ratio: 0, color: '#00BFFF' },
+        { name: '', ratio: 0, color: '#FFD700' },
+        { name: '', ratio: 0, color: '#00BFFF' },
+        { name: '', ratio: 0, color: '#FFD700' }
+      ],
       balls: [],
-      started: false,
-      prizeBall: null,
-      jitterTimelines: []
+      isOpen: false,
+      isAnimating: false,
+      isDispensing: false,
+      dispensedCapsuleColor: '',
+        result: null,
+        isShaking: false,
+        hasShaken: false,
     }
   },
-  mounted() {
-    this.init()
-  },
   methods: {
-    async init() {
-      this.prize = await getPrize()
-      this.balls = createBalls()
-      this.setupAnimation()
-    },
-    setupAnimation() {
-      const $app = this.$refs.app
-      const $machine = this.$refs.machine
-      const $handle = this.$refs.handle
-      const $balls = this.$refs.balls
-      const $title = this.$refs.title
-      const $pointer = this.$refs.pointer
+    dispenseGachapon() {
+  if (!this.isDispensing && !this.hasShaken) {
+    this.isDispensing = true;
+    this.calculateProbabilities();
+    const randomCapsuleIndex = Math.floor(Math.random() * this.balls.length);
+    this.dispensedCapsuleColor = this.balls[randomCapsuleIndex].color;
+    this.isOpen = true;
+    this.isShaking = true; // 觸發搖晃動畫
+    this.hasShaken = true; // 設置已搖晃過
 
-      this.startAnimation = startAnimation.bind(this, {
-        $app,
-        $machine,
-        $handle,
-        $balls,
-        $title,
-        $pointer,
-        balls: this.balls,
-        prize: this.prize,
-        setPrizeBall: (ball) => {
-          this.prizeBall = ball
-        },
-        jitterAnimation: this.jitterAnimation,
-        stopJitterAnimation: this.stopJitterAnimation,
-        pickupAnimation: this.pickupAnimation,
-        popAnimation: this.popAnimation
-      })
+    setTimeout(() => {
+      this.isAnimating = true;
+    }, 1000);
+    setTimeout(() => {
+      this.isAnimating = false;
+      this.isDispensing = false;
+      this.isOpen = false;
+      this.drawResult(randomCapsuleIndex);
+    }, 3000);
+    setTimeout(() => {
+      this.isShaking = false;
+    }, 2000);
+  }
+},
+    calculateProbabilities() {
+      const totalRatio = this.levels.reduce((sum, level) => sum + level.ratio, 0);
+      this.balls = [];
+      for (let i = 0; i < this.levels.length; i++) {
+        const level = this.levels[i];
+        const count = Math.floor((level.ratio / totalRatio) * 15);
+        for (let j = 0; j < count; j++) {
+          this.balls.push({ level: level.name, color: level.color, probability: level.ratio / totalRatio });
+        }
+      }
     },
-    jitterAnimation(callback) {
-      this.jitterTimelines = jitterAnimation(this.balls, this.$refs.machine)
-      callback()
+    drawResult(randomCapsuleIndex) {
+      this.result = { index: randomCapsuleIndex, level: this.balls[randomCapsuleIndex].level };
     },
-    stopJitterAnimation() {
-      stopJitterAnimation(this.balls, this.jitterTimelines)
-    },
-    pickupAnimation() {
-      pickupAnimation(this.prizeBall, this.$refs.prizeContainer)
-    },
-    popAnimation() {
-      popAnimation(this.$refs.app, this.$refs.prizeReward, this.$refs.title, this.$refs.machine)
+    reset() {
+        this.result = null;
+      this.hasShaken = true;
     }
   }
 }
 </script>
 
-
-<style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap');
-
-
-* {
-	&,
-	&::before,
-	&::after {
-		box-sizing: border-box;
-		font-family: inherit;
-		padding: 0;
-		margin: 0;
-	}
+<style scoped>
+.result-container {
+  position: relative;
 }
 
-html {
-	font-size: 62.5%;
-	height: 100%;
-	color: white;
-	font-family: 'M PLUS Rounded 1c', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-
-	body {
-		font-size: 1.6rem;
-		overflow: hidden;
-		height: 100%;
-		position: relative;
-		user-select: none;
-	}
+.result {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  box-shadow: #b5d2fe 0px 0px 10px;
 }
 
-.dim {
-	&[data-animate] {
-		filter: brightness(0.6) saturate(0.8);
-	}
-	
-	transition: 0.5s linear;
+.gachapon-machine {
+  width: 300px;
+  height: 500px;
+  background-color: #b5d2fe;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
-.confetti {
-	position: absolute;
-	top: 0;
-	left: 0;
-	overflow: hidden;
-	width: 100%;
-	height: 100%;
-	z-index: 10;
-	pointer-events: none;
-	perspective: 100vmin;
-
-	span {
-		--size: 5;
-
-		display: block;
-		position: absolute;
-		width: calc(var(--size) * 1px);
-		height: calc(var(--size) * 1px);
-		background-color: blue;
-		animation: rotate linear calc(var(--rs) * 1s) infinite both;
-	}
+.machine-body {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
 }
 
-#app.gotcha {
-	width: 100%;
-	height: 100%;
-	position: relative;
-	background-color: #666;
-
-	.container {
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		position: relative;
-
-		.game-layer {
-			width: 100%;
-			height: 100%;
-			overflow: hidden;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			position: relative;
-			background: url(https://assets.codepen.io/2509128/bg.jpg) center/auto 100% no-repeat;
-
-			.machine-container {
-				position: relative;
-				white-space: nowrap;
-
-				.machine {
-					position: relative;
-					z-index: 1;
-					max-height: 500px;
-					pointer-events: none;
-					 max-width: 500px;
-				}
-
-				.backboard {
-					z-index: 0;
-					width: 15vh;
-					height: 13vh;
-					top: 65%;
-					left: 48%;
-					background-color: #e288bb;
-					position: absolute;
-				}
-
-				.title {
-					--stroke-color: #ad8bd6;
-					position: absolute;
-					display: block;
-					top: 10%;
-					width: 100%;
-					text-align: center;
-					//@extend %stroke;
-					font-size: 5vh;
-					z-index: 3;
-
-					span {
-						animation: blink 0.8s linear both infinite;
-
-						@for $i from 1 through 10 {
-							&:nth-child(#{$i}) {
-								animation-delay: #{$i * 0.12}s;
-							}
-						}
-					}
-				}
-
-				.price {
-					z-index: 3;
-					position: absolute;
-					color: #fb91c9;
-					font-size: 2.5vh;
-					top: 80%;
-					left: 15%;
-				}
-
-				.handle {
-					z-index: 3;
-					position: absolute;
-					height: 3.9vh;
-					left: 13%;
-					top: 69%;
-				}
-
-				.balls {
-					position: absolute;
-					top: 22%;
-					left: 2%;
-					width: 96%;
-					height: 34.5%;
-				}
-
-				.pointer {
-					position: absolute;
-					height: 15vh;
-					top: 75%;
-					left: 15%;
-					z-index: 5;
-          pointer-events: none;
-
-					img {
-						height: 100%;
-						display: block;
-						transform: rotate(-30deg);
-						transform-origin: 0% 0%;
-						animation: click 1s ease-in-out infinite both;
-					}
-				}
-			}
-		}
-
-		.ui-layer {
-			width: 100%;
-			height: 100%;
-			overflow: hidden;
-			position: absolute;
-			top: 0;
-			left: 0;
-			z-index: 1;
-			pointer-events: none;
-
-			.title-container {
-				width: 100%;
-				height: 100%;
-				overflow: hidden;
-				position: absolute;
-				top: 0;
-				left: 0;
-				z-index: 10;
-
-				.title {
-					h2 {
-						--stroke-color: #f06e5b;
-						text-align: center;
-						@extend %stroke;
-						font-size: 5vh;
-					}
-				}
-			}
-
-			.prize-container {
-				width: 100%;
-				height: 100%;
-				overflow: hidden;
-				position: absolute;
-				top: 0;
-				left: 0;
-
-				.prize-ball-container {
-					width: 100%;
-					height: 100%;
-					overflow: hidden;
-					position: absolute;
-					top: 0;
-					left: 0;
-				}
-
-				.prize-reward-container {
-					width: 100%;
-					height: 100%;
-					overflow: hidden;
-					position: absolute;
-					top: 0;
-					left: 0;
-					z-index: 1;
-
-					&>* {
-						display: block;
-						position: absolute;
-						width: 100%;
-						height: 100%;
-						top: 0;
-						left: 0;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-					}
-
-					.prize {
-						img {
-							height: 50vh;
-						}
-					}
-
-					.shine {
-						img {
-							height: 100vh;
-							animation: spin linear 5s infinite forwards;
-						}
-					}
-				}
-			}
-		}
-
-		.ball {
-			--size: 8vh;
-			--outline: #4c3fc2;
-			--color1: #2facff;
-			--color2: #ff8ff6;
-
-			width: var(--size);
-			height: var(--size);
-			border-radius: 100%;
-			background-color: var(--color1);
-			border: solid 0.8vh var(--outline);
-			position: absolute;
-			overflow: hidden;
-
-			&::after {
-				content: '';
-				display: block;
-				position: absolute;
-				top: 50%;
-				height: 200%;
-				width: 200%;
-				background-color: var(--color2);
-				border-radius: 100%;
-				border: inherit;
-				transform: translate(-25%, -5%);
-			}
-		}
-	}
-
-	.wiggle {
-		animation: wiggle 2s ease-in-out infinite both;
-	}
+.display {
+  width: 100%;
+  height: 200px;
+  background-color: #eaf4ff;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
-@keyframes blink {
-	0% {
-		color: #ffc7e5;
-	}
-
-	20% {
-		color: #fcff33;
-	}
-
-	100% {
-		color: #ffc7e5;
-	}
+.capsules-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-@keyframes wiggle {
-	0% {
-		transform: rotate(-5deg);
-	}
-
-	50% {
-		transform: rotate(5deg);
-	}
-
-	100% {
-		transform: rotate(-5deg);
-	}
+.capsule {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  animation: shake 2s ease-in-out;
+  animation-play-state: paused;
+}
+.capsule:nth-child(1) {
+ top: 130px;
+ left: 150px;
+}
+.capsule:nth-child(2) {
+ top: 130px;
+ left: 50px;
+}
+.capsule:nth-child(8) {
+ top: 150px;
+ right: 130px;
+}
+.capsule:nth-child(3) {
+ top: 150px;
+ right: 180px;
+}
+.capsule:nth-child(7) {
+ top: 160px;
+ right: 80px;
+}
+.capsule:nth-child(6) {
+ top: 150px;
+ right: 30px;
+}
+.capsule:nth-child(5) {
+ top: 120px;
+ left: 120px;
+}
+.capsule:nth-child(4) {
+ top: 120px;
+ right: 120px;
 }
 
-@keyframes click {
-	0% {
-		transform: rotate(-30deg) translateY(0vh);
-	}
-
-	80% {
-		transform: rotate(-30deg) translateY(5vh);
-	}
-
-	100% {
-		transform: rotate(-30deg) translateY(0vh);
-	}
+@keyframes shake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  5% { transform: translate(-1px, -1px) rotate(-1deg); }
+  10% { transform: translate(1px, 1px) rotate(1deg); }
+  15% { transform: translate(-1px, 1px) rotate(-1deg); }
+  20% { transform: translate(1px, -1px) rotate(1deg); }
+  25% { transform: translate(-1px, 0px) rotate(-1deg); }
+  30% { transform: translate(1px, 0px) rotate(1deg); }
+  35% { transform: translate(0px, 1px) rotate(0deg); }
+  40% { transform: translate(0px, -1px) rotate(0deg); }
+  45% { transform: translate(1px, 1px) rotate(-1deg); }
+  50% { transform: translate(-1px, -1px) rotate(1deg); }
+  55% { transform: translate(1px, 0px) rotate(-1deg); }
+  60% { transform: translate(-1px, 0px) rotate(1deg); }
+  65% { transform: translate(0px, 1px) rotate(0deg); }
+  70% { transform: translate(0px, -1px) rotate(0deg); }
+  75% { transform: translate(1px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  85% { transform: translate(1px, 0px) rotate(-1deg); }
+  90% { transform: translate(-1px, 0px) rotate(1deg); }
+  95% { transform: translate(0px, 1px) rotate(0deg); }
+  100% { transform: translate(0px, 0px) rotate(0deg); }
 }
 
-@keyframes spin {
-	to {
-		transform: rotate(0turn);
-	}
-
-	from {
-		transform: rotate(1turn);
-	}
+.dispenser {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
-
-@keyframes rotate {
-	from {
-		transform: rotate3d(var(--rx), var(--ry), var(--rz), 0turn);
-	}
-
-	to {
-		transform: rotate3d(var(--rx), var(--ry), var(--rz), 1turn);
-	}
+.capsule-slot {
+  width: 80px;
+  height: 80px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
 }
+
+.capsule-slot.open::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  z-index: 1;
+}
+
+.dispensed-capsule {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  position: absolute;
+  bottom:120px;
+  transition: transform 1s;
+}
+
+.dispensed-capsule.animate {
+  transform: translateY(130px);
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #ff99cc;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
 </style>

@@ -11,7 +11,7 @@
           <div class="dispensed-capsule" :class="{ 'animate': isAnimating }" :style="{ backgroundColor: dispensedCapsuleColor }"></div>
         </div>
         <button @click="dispenseGachapon">
-          <span v-if="!isDispensing">100円</span>
+          <span v-if="!isDispensing">開始抽獎</span>
           <span v-else>がんばれ！</span>
         </button>
       </div>
@@ -28,6 +28,10 @@ export default {
         { id: 2, color: '#FF1493' },
         { id: 3, color: '#FFD700' },
         { id: 4, color: '#00BFFF' },
+        { id: 5, color: '#FFD700' },
+        { id: 6, color: '#FFD700' },
+        { id: 7, color: '#7CFC00' },
+        { id: 8, color: '#FF1493' },
         //球球們
         // Add more capsule colors as needed
       ],
@@ -46,12 +50,13 @@ export default {
         this.isOpen = true;
         setTimeout(() => {
           this.isAnimating = true;
-        }, 500);
+          this.shake = true;
+        }, 1000);
         setTimeout(() => {
           this.isAnimating = false;
           this.isDispensing = false;
           this.isOpen = false;
-        }, 2500);
+        }, 4000);
       }
     },
   },
@@ -62,7 +67,7 @@ export default {
 .gachapon-machine {
   width: 300px;
   height: 500px;
-  background-color: #ff99cc;
+  background-color: #b5d2fe;
   border-radius: 20px;
   padding: 20px;
   display: flex;
@@ -85,9 +90,9 @@ export default {
 }
 
 .display {
-  width: 80%;
+  width: 100%;
   height: 200px;
-  background-color: #e0e0e0;
+  background-color: #eaf4ff;
   border-radius: 10px;
   display: flex;
   justify-content: center;
@@ -98,14 +103,62 @@ export default {
 .capsules-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  flex-wrap: wrap;
 }
 
 .capsule {
-  width: 30px;
-  height: 60px;
-  border-radius: 50% 50% 0 0;
-  margin: 0 5px;
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+.capsule:nth-child(1) {
+ top: 130px;
+ left: 150px;
+}
+.capsule:nth-child(2) {
+ top: 130px;
+ left: 50px;
+}
+.capsule:nth-child(8) {
+ top: 150px;
+ right: 130px;
+}
+.capsule:nth-child(3) {
+ top: 150px;
+ right: 180px;
+}
+.capsule:nth-child(7) {
+ top: 160px;
+ right: 80px;
+}
+.capsule:nth-child(6) {
+ top: 150px;
+ right: 30px;
+}
+.capsule:nth-child(5) {
+ top: 120px;
+ left: 120px;
+}
+.capsule:nth-child(4) {
+ top: 120px;
+ right: 120px;
+}
+
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
 }
 
 .dispenser {
@@ -143,16 +196,16 @@ export default {
 }
 
 .dispensed-capsule {
-  width: 30px;
-  height: 60px;
-  border-radius: 50% 50% 0 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   position: absolute;
-  bottom: -30px;
-  transition: transform 1s ease;
+  bottom:120px;
+  transition: transform 1s;
 }
 
 .dispensed-capsule.animate {
-  transform: translateY(-120px);
+  transform: translateY(130px);
 }
 
 button {
